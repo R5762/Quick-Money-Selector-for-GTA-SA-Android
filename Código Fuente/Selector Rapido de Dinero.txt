@@ -1,0 +1,492 @@
+{$CLEO .csi}
+
+03A4: script_name "Selector de Dinero"
+
+:JUGADOR
+0001: wait 0 ms
+00D6: if
+0256:   player $PLAYER_CHAR defined
+004D: jf @JUGADOR
+00D6: if and
+80DF:   not actor $PLAYER_ACTOR driving
+84AD:   not actor $PLAYER_ACTOR in_water
+8597:   not actor $PLAYER_ACTOR crouching
+8818:   not actor $PLAYER_ACTOR in_air
+8A0C:   not player $PLAYER_CHAR on_jetpack
+004D: jf @FINALIZAR_SCRIPT
+01B4: set_player $PLAYER_CHAR can_move 0
+
+:PANEL_DEL_DINERO
+08D4: 0@ = create_panel_with_title "PNL001" position 240.0 100.0 width 150.0 columns 1 interactive 1 background 1 alignment 0  // Imports
+08DB: set_panel 0@ column 0 header 'DUMMY' data "MNY001" "MNY002" "MNY003" "MNY004" "MNY005" "MNY006" "MNY007" "MNY008" "MNY009" "DUMMY" "DUMMY" "DUMMY"  // Sunday // Monday // Tuesday // Wednesday // Thursday // Friday // Saturday
+04AF: 1@ = 0 // = constant
+090E: set_panel 0@ active_row 1@
+
+:WIDGET_ACEPTAR
+0001: wait 0 ms 
+00D6: if
+0A52:   is_widget_released 78
+004D: jf @WIDGET_SALIR
+08D7: 1@ = panel 0@ active_row
+00D6: if
+001B:   0 > 1@
+004D: jf @VAR_MNY_001
+0006: 1@ = 0
+
+:WIDGET_SALIR
+00D6: if
+0A52:   is_widget_released 75
+004D: jf @WIDGET_Y_LIMITACION_SUBIR
+08DA: remove_panel 0@
+0002: jump @VOLVER_A_MOVER
+
+:WIDGET_Y_LIMITACION_SUBIR
+00D6: if
+0A52:   is_widget_released 97
+004D: jf @WIDGET_Y_LIMITACION_BAJAR
+00D6: if
+04A4:   1@ == 0 // == constant
+004D: jf @SUBIR
+04AF: 1@ = 9 // = constant
+
+:SUBIR
+000E: 1@ -= 1
+090E: set_panel 0@ active_row 1@
+0002: jump @WIDGET_ACEPTAR
+
+:WIDGET_Y_LIMITACION_BAJAR
+00D6: if
+0A52:   is_widget_released 98
+004D: jf @WIDGET_ACEPTAR
+00D6: if
+04A4:   1@ == 9 // == constant
+004D: jf @BAJAR
+04AF: 1@ = 0 // = constant
+
+:BAJAR
+000A: 1@ += 1
+090E: set_panel 0@ active_row 1@
+0002: jump @WIDGET_ACEPTAR
+
+:VAR_MNY_001
+00D6: if
+0039:   1@ == 0
+004D: jf @VAR_MNY_002
+0001: wait 0 ms
+0002: jump @MNY_001
+
+:VAR_MNY_002
+00D6: if
+0039:   1@ == 1
+004D: jf @VAR_MNY_003
+0001: wait 0 ms
+0002: jump @MNY_002
+
+:VAR_MNY_003
+00D6: if
+0039:   1@ == 2
+004D: jf @VAR_MNY_004
+0001: wait 0 ms
+0002: jump @MNY_003
+
+:VAR_MNY_004
+00D6: if
+0039:   1@ == 3
+004D: jf @VAR_MNY_005
+0001: wait 0 ms
+0002: jump @MNY_004
+
+:VAR_MNY_005
+00D6: if
+0039:   1@ == 4
+004D: jf @VAR_MNY_006
+0001: wait 0 ms
+0002: jump @MNY_005
+
+:VAR_MNY_006
+00D6: if
+0039:   1@ == 5
+004D: jf @VAR_MNY_007
+0001: wait 0 ms
+0002: jump @MNY_006
+
+:VAR_MNY_007
+00D6: if
+0039:   1@ == 6
+004D: jf @VAR_MNY_008
+0001: wait 0 ms
+0002: jump @MNY_007
+
+:VAR_MNY_008
+00D6: if
+0039:   1@ == 7
+004D: jf @VAR_MNY_009
+0001: wait 0 ms
+0002: jump @MNY_008
+
+:VAR_MNY_009
+00D6: if
+0039:   1@ == 8
+004D: jf @VAR_MNY_009
+0001: wait 0 ms
+0002: jump @MNY_009
+
+:OBTENER_VERSION_DEL_JUEGO
+0DD6: 2@ = get_game_version // android
+
+:DIRECCIONES_PARA_VERSION_1_08
+00D6: if
+0039:   2@ == 13
+004D: jf @DIRECCIONES_PARA_VERSION_2_00
+0DD8: 2@ = read_mem_addr 0x8E8708 size 4 add_ib 1 // Valor real del dinero
+0DD9: write_mem_addr 0x8E870C value 2@ size 4 add_ib 1 protect 1 // Contador de dinero en pantalla
+0051: return
+
+:DIRECCIONES_PARA_VERSION_2_00
+00D6: if
+0039:   2@ == 17
+004D: jf @DIRECCIONES_PARA_VERSION_1_08
+0DD8: 2@ = read_mem_addr 0x96B754 size 4 add_ib 1 // Valor real del dinero
+0DD9: write_mem_addr 0x96B758 value 2@ size 4 add_ib 1 protect 1 // Contador de dinero en pantalla
+0051: return
+
+:MNY_001
+08DA: remove_panel 0@
+01B4: set_player $PLAYER_CHAR can_move 1
+
+:WIDGET_AUMENTAR_DINERO_001
+0001: wait 0 ms
+00D6: if
+0A52:   is_widget_released 50
+004D: jf @WIDGET_DISMINUIR_DINERO_001
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = 1
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_DISMINUIR_DINERO_001
+00D6: if
+0A52:   is_widget_released 51
+004D: jf @WIDGET_REGRESAR_A_SELECTOR_001
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = -1
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_REGRESAR_A_SELECTOR_001
+00D6: if
+0A52:   is_widget_released 26
+004D: jf @WIDGET_CERRAR_SELECTOR_001
+0001: wait 0 ms
+0002: jump @JUGADOR
+
+:WIDGET_CERRAR_SELECTOR_001
+00D6: if
+0A52:   is_widget_released 89
+004D: jf @WIDGET_AUMENTAR_DINERO_001
+0001: wait 0 ms
+0002: jump @FINALIZAR_SCRIPT
+
+:MNY_002
+08DA: remove_panel 0@
+01B4: set_player $PLAYER_CHAR can_move 1
+
+:WIDGET_AUMENTAR_DINERO_002
+0001: wait 0 ms
+00D6: if
+0A52:   is_widget_released 50
+004D: jf @WIDGET_DISMINUIR_DINERO_002
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = 10
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_DISMINUIR_DINERO_002
+00D6: if
+0A52:   is_widget_released 51
+004D: jf @WIDGET_REGRESAR_A_SELECTOR_002
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = -10
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_REGRESAR_A_SELECTOR_002
+00D6: if
+0A52:   is_widget_released 26
+004D: jf @WIDGET_CERRAR_SELECTOR_002
+0001: wait 0 ms
+0002: jump @JUGADOR
+
+:WIDGET_CERRAR_SELECTOR_002
+00D6: if
+0A52:   is_widget_released 89
+004D: jf @WIDGET_AUMENTAR_DINERO_002
+0001: wait 0 ms
+0002: jump @FINALIZAR_SCRIPT
+
+:MNY_003
+08DA: remove_panel 0@
+01B4: set_player $PLAYER_CHAR can_move 1
+
+:WIDGET_AUMENTAR_DINERO_003
+0001: wait 0 ms
+00D6: if
+0A52:   is_widget_released 50
+004D: jf @WIDGET_DISMINUIR_DINERO_003
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = 100
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_DISMINUIR_DINERO_003
+00D6: if
+0A52:   is_widget_released 51
+004D: jf @WIDGET_REGRESAR_A_SELECTOR_003
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = -100
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_REGRESAR_A_SELECTOR_003
+00D6: if
+0A52:   is_widget_released 26
+004D: jf @WIDGET_CERRAR_SELECTOR_003
+0001: wait 0 ms
+0002: jump @JUGADOR
+
+:WIDGET_CERRAR_SELECTOR_003
+00D6: if
+0A52:   is_widget_released 89
+004D: jf @WIDGET_AUMENTAR_DINERO_003
+0001: wait 0 ms
+0002: jump @FINALIZAR_SCRIPT
+
+:MNY_004
+08DA: remove_panel 0@
+01B4: set_player $PLAYER_CHAR can_move 1
+
+:WIDGET_AUMENTAR_DINERO_004
+0001: wait 0 ms
+00D6: if
+0A52:   is_widget_released 50
+004D: jf @WIDGET_DISMINUIR_DINERO_004
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = 1000
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_DISMINUIR_DINERO_004
+00D6: if
+0A52:   is_widget_released 51
+004D: jf @WIDGET_REGRESAR_A_SELECTOR_004
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = -1000
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_REGRESAR_A_SELECTOR_004
+00D6: if
+0A52:   is_widget_released 26
+004D: jf @WIDGET_CERRAR_SELECTOR_004
+0001: wait 0 ms
+0002: jump @JUGADOR
+
+:WIDGET_CERRAR_SELECTOR_004
+00D6: if
+0A52:   is_widget_released 89
+004D: jf @WIDGET_AUMENTAR_DINERO_004
+0001: wait 0 ms
+0002: jump @FINALIZAR_SCRIPT
+
+:MNY_005
+08DA: remove_panel 0@
+01B4: set_player $PLAYER_CHAR can_move 1
+
+:WIDGET_AUMENTAR_DINERO_005
+0001: wait 0 ms
+00D6: if
+0A52:   is_widget_released 50
+004D: jf @WIDGET_DISMINUIR_DINERO_005
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = 10000
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_DISMINUIR_DINERO_005
+00D6: if
+0A52:   is_widget_released 51
+004D: jf @WIDGET_REGRESAR_A_SELECTOR_005
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = -10000
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_REGRESAR_A_SELECTOR_005
+00D6: if
+0A52:   is_widget_released 26
+004D: jf @WIDGET_CERRAR_SELECTOR_005
+0001: wait 0 ms
+0002: jump @JUGADOR
+
+:WIDGET_CERRAR_SELECTOR_005
+00D6: if
+0A52:   is_widget_released 89
+004D: jf @WIDGET_AUMENTAR_DINERO_005
+0001: wait 0 ms
+0002: jump @FINALIZAR_SCRIPT
+
+:MNY_006
+08DA: remove_panel 0@
+01B4: set_player $PLAYER_CHAR can_move 1
+
+:WIDGET_AUMENTAR_DINERO_006
+0001: wait 0 ms
+00D6: if
+0A52:   is_widget_released 50
+004D: jf @WIDGET_DISMINUIR_DINERO_006
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = 100000
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_DISMINUIR_DINERO_006
+00D6: if
+0A52:   is_widget_released 51
+004D: jf @WIDGET_REGRESAR_A_SELECTOR_006
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = -100000
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_REGRESAR_A_SELECTOR_006
+00D6: if
+0A52:   is_widget_released 26
+004D: jf @WIDGET_CERRAR_SELECTOR_006
+0001: wait 0 ms
+0002: jump @JUGADOR
+
+:WIDGET_CERRAR_SELECTOR_006
+00D6: if
+0A52:   is_widget_released 89
+004D: jf @WIDGET_AUMENTAR_DINERO_006
+0001: wait 0 ms
+0002: jump @FINALIZAR_SCRIPT
+
+:MNY_007
+08DA: remove_panel 0@
+01B4: set_player $PLAYER_CHAR can_move 1
+
+:WIDGET_AUMENTAR_DINERO_007
+0001: wait 0 ms
+00D6: if
+0A52:   is_widget_released 50
+004D: jf @WIDGET_DISMINUIR_DINERO_007
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = 1000000
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_DISMINUIR_DINERO_007
+00D6: if
+0A52:   is_widget_released 51
+004D: jf @WIDGET_REGRESAR_A_SELECTOR_007
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = -1000000
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_REGRESAR_A_SELECTOR_007
+00D6: if
+0A52:   is_widget_released 26
+004D: jf @WIDGET_CERRAR_SELECTOR_007
+0001: wait 0 ms
+0002: jump @JUGADOR
+
+:WIDGET_CERRAR_SELECTOR_007
+00D6: if
+0A52:   is_widget_released 89
+004D: jf @WIDGET_AUMENTAR_DINERO_007
+0001: wait 0 ms
+0002: jump @FINALIZAR_SCRIPT
+
+:MNY_008
+08DA: remove_panel 0@
+01B4: set_player $PLAYER_CHAR can_move 1
+
+:WIDGET_AUMENTAR_DINERO_008
+0001: wait 0 ms
+00D6: if
+0A52:   is_widget_released 50
+004D: jf @WIDGET_DISMINUIR_DINERO_008
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = 10000000
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_DISMINUIR_DINERO_008
+00D6: if
+0A52:   is_widget_released 51
+004D: jf @WIDGET_REGRESAR_A_SELECTOR_008
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = -10000000
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_REGRESAR_A_SELECTOR_008
+00D6: if
+0A52:   is_widget_released 26
+004D: jf @WIDGET_CERRAR_SELECTOR_008
+0001: wait 0 ms
+0002: jump @JUGADOR
+
+:WIDGET_CERRAR_SELECTOR_008
+00D6: if
+0A52:   is_widget_released 89
+004D: jf @WIDGET_AUMENTAR_DINERO_008
+0001: wait 0 ms
+0002: jump @FINALIZAR_SCRIPT
+
+:MNY_009
+08DA: remove_panel 0@
+01B4: set_player $PLAYER_CHAR can_move 1
+
+:WIDGET_AUMENTAR_DINERO_009
+0001: wait 0 ms
+00D6: if
+0A52:   is_widget_released 50
+004D: jf @WIDGET_DISMINUIR_DINERO_009
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = 100000000
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_DISMINUIR_DINERO_009
+00D6: if
+0A52:   is_widget_released 51
+004D: jf @WIDGET_REGRESAR_A_SELECTOR_009
+010B: 3@ = player $PLAYER_CHAR money
+0006: 3@ = -100000000
+0109: player $PLAYER_CHAR money += 3@
+0050: gosub @OBTENER_VERSION_DEL_JUEGO
+
+:WIDGET_REGRESAR_A_SELECTOR_009
+00D6: if
+0A52:   is_widget_released 26
+004D: jf @WIDGET_CERRAR_SELECTOR_009
+0001: wait 0 ms
+0002: jump @JUGADOR
+
+:WIDGET_CERRAR_SELECTOR_009
+00D6: if
+0A52:   is_widget_released 89
+004D: jf @WIDGET_AUMENTAR_DINERO_009
+0001: wait 0 ms
+0002: jump @FINALIZAR_SCRIPT
+
+:VOLVER_A_MOVER
+0001: wait 0 ms
+01B4: set_player $PLAYER_CHAR can_move 1
+0002: jump @FINALIZAR_SCRIPT
+
+:FINALIZAR_SCRIPT
+004E: terminate_this_script
